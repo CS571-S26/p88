@@ -1,7 +1,8 @@
 import './App.css'
 import { Routes, Route } from 'react-router-dom'
-import QueueTestPage from './pages/HomePage.jsx'
-import AboutPage from './pages/AboutPage.jsx'
+import HomePage from './pages/HomePage.jsx'
+import SchedulingPage from './pages/SchedulingPage.jsx'
+import ExecutionPage from './pages/ExecutionPage.jsx'
 import NotFoundPage from './pages/NotFoundPage.jsx'
 import Layout from './components/Layout.jsx'
 import { QueueProvider } from './contexts/QueueContext.jsx'
@@ -11,8 +12,9 @@ function App() {
     <QueueProvider>
       <Routes>
         <Route element={<Layout />}>
-          <Route index element={<QueueTestPage />} />
-          <Route path="about" element={<AboutPage />} />
+          <Route index element={<HomePage />} />
+          <Route path="scheduling" element={<SchedulingPage />} />
+          <Route path="execution" element={<ExecutionPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

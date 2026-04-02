@@ -4,23 +4,34 @@ const QueueContext = createContext()
 
 export function QueueProvider({ children }) {
   const [queue, setQueue] = useState([])
+  const [quantum, setQuantum] = useState(10)
 
   function enqueue(task) {
     setQueue(q => [...q, task])
   }
 
   function dequeue() {
-    let removedTask = null
     setQueue(q => {
       if (q.length === 0) return q
-      removedTask = q[0]
       return q.slice(1)
     })
-    return removedTask
+  }
+
+  function removeTask(id) {
+    setQueue(q => q.filter(task => task.id !== id))
   }
 
   return (
-    <QueueContext.Provider value={{ queue, enqueue, dequeue }}>
+    <QueueContext.Provider
+      value={{
+        queue,
+        enqueue,
+        dequeue,
+        removeTask,
+        quantum,
+        setQuantum
+      }}
+    >
       {children}
     </QueueContext.Provider>
   )
