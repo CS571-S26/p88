@@ -56,7 +56,9 @@
   box-sizing: border-box;
 
   position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
+
 
 .task-block-next {
   border: 3px solid #212529;
@@ -115,4 +117,26 @@
 .task-queue-quantum .form-label {
   margin-bottom: 0.25rem;
   font-size: 0.9rem;
+}
+
+.task-queue-quantum-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+}
+
+.task-queue-quantum-labels small {
+  color: #6c757d;
+}
+
+.task-block-next {
+  border: 2px solid #ffffff;
+}
+
+.task-queue-container {
+  background-color: #1e1f22;  /* match app background */
+}
+
+.task-queue-empty {
+  color: #9aa0a6;
 }

@@ -8,23 +8,30 @@ export default function SchedulingPage() {
   const { enqueue } = useQueue()
 
   const [taskName, setTaskName] = useState('')
-  const [estimatedTime, setEstimatedTime] = useState(25)
+  const [estimatedMinutes, setEstimatedMinutes] = useState(25)
+  const [estimatedSeconds, setEstimatedSeconds] = useState(0)
   const [register, setRegister] = useState('')
 
   function handleEnqueue(e) {
     e.preventDefault()
     if (!taskName.trim()) return
 
+    const totalEstimatedSeconds =
+      Number(estimatedMinutes) * 60 + Number(estimatedSeconds)
+
+    if (totalEstimatedSeconds <= 0) return
+
     enqueue({
       id: crypto.randomUUID(),
       name: taskName,
-      estimatedTime: Number(estimatedTime),
+      estimatedTime: totalEstimatedSeconds,
       timeSpent: 0,
       register
     })
 
     setTaskName('')
-    setEstimatedTime(25)
+    setEstimatedMinutes(25)
+    setEstimatedSeconds(0)
     setRegister('')
   }
 
@@ -50,15 +57,32 @@ export default function SchedulingPage() {
                   />
                 </Form.Group>
 
-                <Form.Group className="mb-3" controlId="estimatedTime">
-                  <Form.Label>Estimated Minutes</Form.Label>
-                  <Form.Control
-                    type="number"
-                    min="1"
-                    value={estimatedTime}
-                    onChange={e => setEstimatedTime(e.target.value)}
-                  />
-                </Form.Group>
+                <Form.Label>Estimated Time</Form.Label>
+                <Row className="mb-3">
+                  <Col xs={6}>
+                    <Form.Group controlId="estimatedMinutes">
+                      <Form.Label className="text-muted small">Minutes</Form.Label>
+                      <Form.Control
+                        type="number"
+                        min="0"
+                        value={estimatedMinutes}
+                        onChange={e => setEstimatedMinutes(e.target.value)}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col xs={6}>
+                    <Form.Group controlId="estimatedSeconds">
+                      <Form.Label className="text-muted small">Seconds</Form.Label>
+                      <Form.Control
+                        type="number"
+                        min="0"
+                        max="59"
+                        value={estimatedSeconds}
+                        onChange={e => setEstimatedSeconds(e.target.value)}
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
 
                 <Form.Group className="mb-3" controlId="register">
                   <Form.Label>Initial Register</Form.Label>

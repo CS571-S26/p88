@@ -21,6 +21,32 @@ export function QueueProvider({ children }) {
     setQueue(q => q.filter(task => task.id !== id))
   }
 
+  function markTaskComplete(id) {
+    setQueue(q => q.filter(task => task.id !== id))
+  }
+
+  function updateTaskRegister(id, register) {
+    setQueue(q =>
+      q.map(task =>
+        task.id === id ? { ...task, register } : task
+      )
+    )
+  }
+
+  function completeQuantumAndRotate() {
+    setQueue(q => {
+      if (q.length === 0) return q
+
+      const [current, ...rest] = q
+      const updatedTask = {
+        ...current,
+        timeSpent: current.timeSpent + quantum
+      }
+
+      return [...rest, updatedTask]
+    })
+  }
+
   return (
     <QueueContext.Provider
       value={{
@@ -28,6 +54,9 @@ export function QueueProvider({ children }) {
         enqueue,
         dequeue,
         removeTask,
+        markTaskComplete,
+        updateTaskRegister,
+        completeQuantumAndRotate,
         quantum,
         setQuantum
       }}

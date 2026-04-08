@@ -1,0 +1,108 @@
+/* Main app background */
+main {
+  min-height: 100vh;
+}
+
+/* Cards become "panels" */
+.card {
+  background-color: #2b2d31;
+  color: #e6e6e6;
+  border: 1px solid #3c3f44;
+  border-radius: 6px;
+}
+
+/* Subtle inner panels */
+.card .card {
+  background-color: #232428;
+  border: 1px solid #3c3f44;
+}
+
+/* Inputs */
+.form-control {
+  background-color: #1e1f22;
+  color: #e6e6e6;
+  border: 1px solid #3c3f44;
+}
+
+.form-control:focus {
+  background-color: #1e1f22;
+  color: #ffffff;
+  border-color: #6c757d;
+  box-shadow: none;
+}
+
+/* Labels */
+.form-label {
+  color: #b0b3b8;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 4px;
+}
+
+/* Secondary buttons look more system-like */
+.btn-secondary {
+  background-color: #3c3f44;
+  border-color: #3c3f44;
+}
+
+/* Navbar */
+nav {
+  border-bottom: 1px solid #3c3f44;
+  padding-bottom: 0.5rem;
+}
+
+/* Links */
+a {
+  color: #9aa4ff;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #c0c7ff;
+}
+
+/* Muted text */
+.text-muted {
+  color: #9aa0a6 !important;
+}
+
+code,
+.task-label,
+.card-body p {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* NAV BAR */
+.app-nav {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #3c3f44;
+  background-color: #232428;
+}
+
+/* NAV ITEMS (buttons) */
+.nav-item {
+  padding: 0.5rem 1rem;
+  background-color: #2b2d31;
+  border: 1px solid #3c3f44;
+  border-radius: 4px;
+  color: #e6e6e6;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+/* Hover */
+.nav-item:hover {
+  background-color: #3a3d42;
+}
+
+/* Active page */
+.nav-item.active {
+  background-color: #4f86f7;
+  border-color: #4f86f7;
+  color: white;
+}
