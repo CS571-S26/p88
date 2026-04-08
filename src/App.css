@@ -106,3 +106,22 @@ code,
   border-color: #4f86f7;
   color: white;
 }
+
+/* Placeholder text (the faint suggestion text) */
+.form-control::placeholder {
+  color: #a0a4ab;
+  opacity: 1; /* important: overrides browser default fading */
+}
+
+/* For better compatibility */
+.form-control::-webkit-input-placeholder {
+  color: #a0a4ab;
+}
+
+.form-control::-moz-placeholder {
+  color: #a0a4ab;
+}
+
+.form-control:-ms-input-placeholder {
+  color: #a0a4ab;
+}
