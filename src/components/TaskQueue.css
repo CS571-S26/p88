@@ -9,16 +9,33 @@
   padding: 0;
 }
 
-.task-queue-header {
-  margin-bottom: 1rem;
+.task-queue-header small {
+  color: var(--queue-header-muted);
 }
 
+.task-queue-container {
+  overflow-y: auto;
+  max-height: 70vh;
+  border: 1px solid var(--queue-container-border);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  background-color: var(--queue-bg);
+}
+
+.task-queue-empty {
+  color: var(--queue-empty);
+}
+
+.task-block-next {
+  border: 2px solid var(--queue-next-border);
+}
+
+.task-remove-btn {
+  background-color: var(--remove-btn-bg);
+  color: var(--remove-btn-text);
+}
 .task-queue-header h2 {
   margin: 0;
-}
-
-.task-queue-header small {
-  color: #6c757d;
 }
 
 .task-queue-container {
@@ -57,32 +74,6 @@
 
   position: relative;
   border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-
-.task-block-next {
-  border: 3px solid #212529;
-}
-
-.task-remove-btn {
-  position: absolute;
-  top: 4px;
-  right: 6px;
-
-    background-color: #FF0000;
-  border-radius: 0;
-
-  color: white;
-
-  font-size: 14px;
-  font-weight: bold;
-  line-height: 1;
-
-  padding: 2px 6px;
-
-  cursor: pointer;
-
-  opacity: 0.8;
 }
 
 .task-remove-btn:hover {
@@ -133,10 +124,28 @@
   border: 2px solid #ffffff;
 }
 
+.task-queue-header small {
+  color: var(--queue-header-muted);
+}
+
 .task-queue-container {
-  background-color: #1e1f22;  /* match app background */
+  overflow-y: auto;
+  max-height: 70vh;
+  border: 1px solid var(--queue-container-border);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  background-color: var(--queue-bg);
 }
 
 .task-queue-empty {
-  color: #9aa0a6;
+  color: var(--queue-empty);
+}
+
+.task-block-next {
+  border: 2px solid var(--queue-next-border);
+}
+
+.task-remove-btn {
+  background-color: var(--remove-btn-bg);
+  color: var(--remove-btn-text);
 }

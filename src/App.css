@@ -5,35 +5,35 @@ main {
 
 /* Cards become "panels" */
 .card {
-  background-color: #2b2d31;
-  color: #e6e6e6;
-  border: 1px solid #3c3f44;
+  background-color: var(--card-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
   border-radius: 6px;
 }
 
 /* Subtle inner panels */
 .card .card {
-  background-color: #232428;
-  border: 1px solid #3c3f44;
+  background-color: var(--card-nested-bg);
+  border: 1px solid var(--border);
 }
 
 /* Inputs */
 .form-control {
-  background-color: #1e1f22;
-  color: #e6e6e6;
-  border: 1px solid #3c3f44;
+  background-color: var(--input-bg);
+  color: var(--input-text);
+  border: 1px solid var(--border);
 }
 
 .form-control:focus {
-  background-color: #1e1f22;
-  color: #ffffff;
+  background-color: var(--input-bg);
+  color: var(--input-text);
   border-color: #6c757d;
   box-shadow: none;
 }
 
 /* Labels */
 .form-label {
-  color: #b0b3b8;
+  color: var(--muted);
 }
 
 /* Buttons */
@@ -43,29 +43,29 @@ main {
 
 /* Secondary buttons look more system-like */
 .btn-secondary {
-  background-color: #3c3f44;
-  border-color: #3c3f44;
+  background-color: var(--border);
+  border-color: var(--border);
 }
 
 /* Navbar */
 nav {
-  border-bottom: 1px solid #3c3f44;
+  border-bottom: 1px solid var(--border);
   padding-bottom: 0.5rem;
 }
 
 /* Links */
 a {
-  color: #9aa4ff;
+  color: var(--link);
   text-decoration: none;
 }
 
 a:hover {
-  color: #c0c7ff;
+  color: var(--link-hover);
 }
 
 /* Muted text */
 .text-muted {
-  color: #9aa0a6 !important;
+  color: var(--muted) !important;
 }
 
 code,
@@ -79,49 +79,89 @@ code,
   display: flex;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid #3c3f44;
-  background-color: #232428;
+  border-bottom: 1px solid var(--border);
+  background-color: var(--nav-bg);
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 /* NAV ITEMS (buttons) */
 .nav-item {
   padding: 0.5rem 1rem;
-  background-color: #2b2d31;
-  border: 1px solid #3c3f44;
+  background-color: var(--nav-item-bg);
+  border: 1px solid var(--border);
   border-radius: 4px;
-  color: #e6e6e6;
+  color: var(--nav-item-text);
   font-weight: 500;
   text-decoration: none;
   transition: background-color 0.15s ease;
+  cursor: pointer;
 }
 
 /* Hover */
 .nav-item:hover {
-  background-color: #3a3d42;
+  background-color: var(--nav-item-hover);
+  color: var(--nav-item-text);
 }
 
 /* Active page */
 .nav-item.active {
-  background-color: #4f86f7;
-  border-color: #4f86f7;
+  background-color: var(--nav-item-active);
+  border-color: var(--nav-item-active);
   color: white;
 }
 
-/* Placeholder text (the faint suggestion text) */
-.form-control::placeholder {
-  color: #a0a4ab;
-  opacity: 1; /* important: overrides browser default fading */
+.theme-toggle {
+  margin-left: auto;
 }
 
-/* For better compatibility */
+/* Placeholder text */
+.form-control::placeholder {
+  color: var(--input-placeholder);
+  opacity: 1;
+}
+
 .form-control::-webkit-input-placeholder {
-  color: #a0a4ab;
+  color: var(--input-placeholder);
 }
 
 .form-control::-moz-placeholder {
-  color: #a0a4ab;
+  color: var(--input-placeholder);
 }
 
 .form-control:-ms-input-placeholder {
-  color: #a0a4ab;
+  color: var(--input-placeholder);
+}
+
+.theme-toggle-icon {
+  margin-left: auto;
+
+  width: 36px;
+  height: 36px;
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  font-size: 18px;
+}
+
+/* optional hover polish */
+.theme-toggle-icon:hover {
+  transform: scale(1.05);
+}
+
+.execution-controls .btn {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 18px;
 }

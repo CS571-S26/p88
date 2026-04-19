@@ -8,38 +8,41 @@ export default function HomePage() {
         <Col md={8} lg={8}>
           <Card className="p-3">
             <Card.Body>
-              <h1 className="mb-3">LifeOS</h1>
+              <h1 className="mb-2">LifeOS</h1>
 
-              <p className="text-muted">
+              <p className="text-muted mb-3">
                 It&apos;s time to execute.
               </p>
 
               <p>
-                LifeOS is a tool for people who do not want to waste time
-                deciding what to do next. It is not trying to psychoanalyze
-                you, optimize your emotions, or dress up procrastination in
-                research language. You enter your tasks, give rough estimates,
-                and let the scheduler tell you what to work on.
+                A lightweight system for scheduling work, executing it, and
+                seeing what actually happened. No overthinking, no productivity
+                theater.
               </p>
 
               <p>
-                The idea is simple: computers do not sit around wondering
-                which process feels the most inspiring. They schedule work,
-                execute it, context switch when needed, and keep going.
-                LifeOS applies that same spirit to human tasks.
+                Add tasks with rough estimates, then let the scheduler decide
+                what runs next. The queue on the right is your ready queue —
+                work waiting to execute.
               </p>
 
               <p>
-                The stack of blocks on the right is your ready queue: the work
-                waiting to run. Add tasks in Scheduling, then move to Execution
-                when it&apos;s time to work.
+                In Execution, tasks run in time slices. You leave notes before
+                switching away so future you can resume without friction.
               </p>
 
-              <p className="mb-0">
-                LifeOS is loosely inspired by <em>Algorithms to Live By</em>,
-                but its goal is to make those ideas concrete: fewer vague
-                productivity theories, more direct execution.
+              <p>
+                Standup fixes the usual meeting pain: no awkward “who goes next,” no
+                depth-first rabbit holes where one person eats the whole meeting,
+                and no updates that disappear. Everyone speaks, notes are captured,
+                and you get a recap.
               </p>
+
+              <p>
+                For quantitative nerds, we have Metrics: throughput, estimate accuracy, focus
+                time, context switching, and a slightly judgmental productivity score.
+              </p>
+
             </Card.Body>
           </Card>
         </Col>

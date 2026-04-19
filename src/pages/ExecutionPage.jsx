@@ -1,7 +1,8 @@
 import '../App.css'
-import { Card, Row, Col, Button, Badge, Form } from 'react-bootstrap'
-import { useEffect, useState } from 'react'
+import { Card, Row, Col, Button, Badge, Form, OverlayTrigger, Tooltip } from 'react-bootstrap'
+import { useEffect, useRef, useState } from 'react'
 import { useQueue } from '../contexts/QueueContext'
+import { FiRefreshCw } from 'react-icons/fi'   // best match
 import TaskQueue from '../components/TaskQueue'
 
 export default function ExecutionPage() {
@@ -10,7 +11,9 @@ export default function ExecutionPage() {
     quantum,
     updateTaskRegister,
     completeQuantumAndRotate,
-    markTaskComplete
+    markTaskComplete,
+    addTimeToTask,
+    logEvent
   } = useQueue()
 
   const currentTask = queue.length > 0 ? queue[0] : null
@@ -19,6 +22,8 @@ export default function ExecutionPage() {
   const [quantumRemaining, setQuantumRemaining] = useState(quantum)
   const [awaitingContextSwitch, setAwaitingContextSwitch] = useState(false)
   const [statusMessage, setStatusMessage] = useState('Paused')
+
+  const lastRunSignatureRef = useRef(null)
 
   function formatTime(totalSeconds) {
     const minutes = Math.floor(totalSeconds / 60)
@@ -31,36 +36,59 @@ export default function ExecutionPage() {
   }, [quantum, currentTask])
 
   useEffect(() => {
-    if (!isRunning || !currentTask || awaitingContextSwitch) return
+    if (!isRunning || !currentTask) {
+      lastRunSignatureRef.current = null
+      return
+    }
 
-    const intervalId = setInterval(() => {
-      setQuantumRemaining(prev => {
-        if (prev > 1) {
-          return prev - 1
-        }
+    const signature = `${currentTask.id}-${awaitingContextSwitch}-${quantumRemaining}`
 
-        if (queue.length === 1) {
-          completeQuantumAndRotate()
-          setStatusMessage('Running')
-          return quantum
-        }
-
-        setIsRunning(false)
-        setAwaitingContextSwitch(true)
-        setStatusMessage('Awaiting Context Switch')
-        return 0
+    if (!awaitingContextSwitch && lastRunSignatureRef.current !== signature) {
+      logEvent('run_started', currentTask.id, {
+        quantumRemaining
       })
-    }, 1000)
+      lastRunSignatureRef.current = signature
+    }
+  }, [isRunning, currentTask, awaitingContextSwitch, quantumRemaining, logEvent])
 
-    return () => clearInterval(intervalId)
-  }, [
-    isRunning,
-    currentTask,
-    awaitingContextSwitch,
-    queue.length,
-    quantum,
-    completeQuantumAndRotate
-  ])
+useEffect(() => {
+  if (!isRunning || !currentTask || awaitingContextSwitch) return
+
+  const intervalId = setInterval(() => {
+    if (quantumRemaining > 1) {
+      setQuantumRemaining(prev => prev - 1)
+      return
+    }
+
+    if (queue.length === 1) {
+      setQuantumRemaining(quantum)
+      completeQuantumAndRotate()
+      logEvent('quantum_completed', currentTask.id, {
+        workedSeconds: quantum
+      })
+      setStatusMessage('Running')
+      return
+    }
+
+    setQuantumRemaining(0)
+    setIsRunning(false)
+    setAwaitingContextSwitch(true)
+    logEvent('context_switch_requested', currentTask.id)
+    setStatusMessage('Awaiting Context Switch')
+  }, 1000)
+
+  return () => clearInterval(intervalId)
+}, [
+  isRunning,
+  currentTask,
+  awaitingContextSwitch,
+  quantumRemaining,
+  queue.length,
+  quantum,
+  completeQuantumAndRotate,
+  logEvent
+])
+ 
 
   function handlePlay() {
     if (!currentTask || awaitingContextSwitch) return
@@ -74,6 +102,12 @@ export default function ExecutionPage() {
   }
 
   function handlePause() {
+    if (!currentTask) return
+
+    logEvent('run_paused', currentTask.id, {
+      quantumRemaining
+    })
+
     setIsRunning(false)
     if (!awaitingContextSwitch) {
       setStatusMessage('Paused')
@@ -81,6 +115,10 @@ export default function ExecutionPage() {
   }
 
   function handleContextSwitch() {
+    if (!currentTask) return
+
+    logEvent('context_switch_completed', currentTask.id)
+
     completeQuantumAndRotate()
     setQuantumRemaining(quantum)
     setAwaitingContextSwitch(false)
@@ -91,11 +129,23 @@ export default function ExecutionPage() {
   function handleMarkComplete() {
     if (!currentTask) return
 
+    const workedThisSlice = quantum - quantumRemaining
+
+    if (workedThisSlice > 0) {
+      addTimeToTask(currentTask.id, workedThisSlice)
+    }
+
+    logEvent('task_completed', currentTask.id, {
+      estimatedTime: currentTask.estimatedTime,
+      totalTimeSpent: (currentTask.timeSpent ?? 0) + workedThisSlice,
+      workedThisSlice
+    })
+
     markTaskComplete(currentTask.id)
     setQuantumRemaining(quantum)
     setAwaitingContextSwitch(false)
-    setIsRunning(true)
-    setStatusMessage('Running')
+    setIsRunning(queue.length > 1)
+    setStatusMessage(queue.length > 1 ? 'Running' : 'Paused')
   }
 
   function handleRegisterChange(e) {
@@ -112,8 +162,14 @@ export default function ExecutionPage() {
         <Col md={8} lg={8}>
           <Card className="p-3">
             <Card.Body>
-              <h1 className="mb-3">Execution</h1>
-              <p className="text-muted">
+              <div className="d-flex justify-content-between align-items-center mb-2">
+                <h1 className="mb-0">Execution</h1>
+                <Badge bg={isRunning ? 'success' : awaitingContextSwitch ? 'warning' : 'secondary'}>
+                  {statusMessage}
+                </Badge>
+              </div>
+
+              <p className="text-muted mb-3">
                 Run the current task, track the active quantum, and commit context switches explicitly.
               </p>
 
@@ -121,22 +177,32 @@ export default function ExecutionPage() {
                 <Card.Body>
                   <div className="d-flex justify-content-between align-items-center mb-3">
                     <h3 className="mb-0">Current Task</h3>
-                    <Badge bg={isRunning ? 'success' : awaitingContextSwitch ? 'warning' : 'secondary'}>
-                      {statusMessage}
-                    </Badge>
                   </div>
-
                   {currentTask ? (
                     <>
-                      <p><strong>Name:</strong> {currentTask.name}</p>
-                      <p><strong>Estimated Time:</strong> {formatTime(currentTask.estimatedTime)}</p>
-                      <p>
-                        <strong>Time Spent:</strong>{' '}
-                        <span className={isOverEstimate ? 'text-danger fw-bold' : ''}>
-                          {formatTime(currentTask.timeSpent)}
-                        </span>
-                      </p>
-                      <p><strong>Quantum Remaining:</strong> {formatTime(quantumRemaining)}</p>
+                      <div className="mb-3">
+                        <div className="fw-semibold mb-2">{currentTask.name}</div>
+
+                        <div
+                          className="d-flex flex-wrap gap-4 align-items-center"
+                          style={{
+                            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                            fontSize: '0.95rem'
+                          }}
+                        >
+                          <div>
+                            <span className="text-muted">Estimated:</span>{' '}
+                            <strong>{formatTime(currentTask.estimatedTime)}</strong>
+                          </div>
+
+                          <div>
+                            <span className="text-muted">Spent:</span>{' '}
+                            <strong className={isOverEstimate ? 'text-danger' : ''}>
+                              {formatTime(currentTask.timeSpent)}
+                            </strong>
+                          </div>
+                        </div>
+                      </div>
 
                       <Form.Group className="mb-3" controlId="currentRegister">
                         <Form.Label><strong>Register</strong></Form.Label>
@@ -149,38 +215,48 @@ export default function ExecutionPage() {
                         />
                       </Form.Group>
 
-                      {awaitingContextSwitch && (
-                        <p className="text-muted">
-                          The quantum has expired. Update the register if needed, then commit the context switch.
-                        </p>
-                      )}
-
-                      <div className="d-flex gap-2">
-                        <Button onClick={handlePlay} disabled={isRunning || awaitingContextSwitch}>
-                          Play
-                        </Button>
-
-                        <Button
-                          variant="secondary"
-                          onClick={handlePause}
-                          disabled={!isRunning}
-                        >
-                          Pause
-                        </Button>
+                      <div
+                        className="d-flex flex-wrap align-items-center gap-3 execution-controls"
+                        style={{
+                          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                          fontSize: '0.95rem'
+                        }}
+                      >
+                        <div className="me-2">
+                          <span className="text-muted">Quantum Remaining:</span>{' '}
+                          <strong>{formatTime(quantumRemaining)}</strong>
+                        </div>
 
                         <Button
-                          variant="success"
-                          onClick={handleMarkComplete}
+                          variant={isRunning ? 'secondary' : 'primary'}
+                          onClick={isRunning ? handlePause : handlePlay}
+                          disabled={!currentTask || awaitingContextSwitch}
                         >
-                          Mark Complete
+                          {isRunning ? '⏸' : '▶'}
+                        </Button>
+
+                        <Button variant="success" onClick={handleMarkComplete}>
+                          ✓
                         </Button>
 
                         {awaitingContextSwitch && (
-                          <Button variant="warning" onClick={handleContextSwitch}>
-                            Context Switch
-                          </Button>
+                          <OverlayTrigger
+                            placement="top"
+                            overlay={<Tooltip>Commit Context Switch</Tooltip>}
+                          >
+                            <Button variant="warning" onClick={handleContextSwitch}>
+                              <FiRefreshCw />
+                            </Button>
+                            
+                          </OverlayTrigger>
                         )}
                       </div>
+
+                      {awaitingContextSwitch && (
+                        <p className="text-muted mt-3 mb-0">
+                          The quantum has expired. Update the register if needed, then commit the context switch.
+                        </p>
+                      )}
                     </>
                   ) : (
                     <p className="text-muted mb-0">No task is ready to run.</p>
