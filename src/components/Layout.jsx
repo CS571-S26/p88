@@ -16,6 +16,10 @@ export default function Layout() {
         <NavLink to="/execution" className="nav-item">
           Execution
         </NavLink>
+
+        <NavLink to="/standup" className="nav-item">
+          Standup
+        </NavLink>
       </nav>
 
       <main>
