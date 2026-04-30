@@ -32,6 +32,12 @@ export default function HomePage() {
               </p>
 
               <p>
+                Retry Tasks are for work that should come back later instead of staying in your
+                head. Add a follow-up, choose a backoff schedule, keep the context in a
+                register, and LifeOS will surface it when it is due again.
+              </p>
+
+              <p>
                 Standup fixes the usual meeting pain: no awkward “who goes next,” no
                 depth-first rabbit holes where one person eats the whole meeting,
                 and no updates that disappear. Everyone speaks, notes are captured,

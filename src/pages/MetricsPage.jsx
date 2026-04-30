@@ -4,9 +4,26 @@ import { Card, Row, Col, ButtonGroup, Button, OverlayTrigger, Tooltip } from 're
 import { useQueue } from '../contexts/QueueContext'
 import TaskQueue from '../components/TaskQueue'
 
+const TIMELINE_COLORS = [
+  '#1f4fd1',
+  '#237044',
+  '#8a6500',
+  '#6f4db8',
+  '#1f7f78',
+  '#4f63bf',
+  '#9b1c1c',
+  '#a65f20'
+]
+
 function startOfDay(ts) {
   const d = new Date(ts)
   d.setHours(0, 0, 0, 0)
+  return d
+}
+
+function endOfDay(ts) {
+  const d = new Date(ts)
+  d.setHours(23, 59, 59, 999)
   return d
 }
 
@@ -18,6 +35,13 @@ function formatDayLabel(ts) {
   return new Date(ts).toLocaleDateString([], {
     month: 'short',
     day: 'numeric'
+  })
+}
+
+function formatClockTime(ts) {
+  return new Date(ts).toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit'
   })
 }
 
@@ -49,9 +73,7 @@ function formatSignedMinutes(seconds) {
   }
 
   const roundedToTenth = Math.round(mins * 10) / 10
-  const isWhole = Number.isInteger(roundedToTenth)
-
-  const value = isWhole
+  const value = Number.isInteger(roundedToTenth)
     ? `${Math.trunc(roundedToTenth)}`
     : `${roundedToTenth.toFixed(1)}`
 
@@ -71,24 +93,12 @@ function average(values) {
 
 function InfoLabel({ title, info }) {
   return (
-    <div
-      className="d-flex align-items-start gap-2 mb-2"
-      style={{ minHeight: 40 }}
-    >
-      <h2
-        className="mb-0"
-        style={{
-          lineHeight: 1.2,
-          fontSize: '1rem'
-        }}
-      >
+    <div className="d-flex align-items-start gap-2 mb-2" style={{ minHeight: 40 }}>
+      <h2 className="mb-0" style={{ lineHeight: 1.2, fontSize: '1rem' }}>
         {title}
       </h2>
 
-      <OverlayTrigger
-        placement="top"
-        overlay={<Tooltip>{info}</Tooltip>}
-      >
+      <OverlayTrigger placement="top" overlay={<Tooltip>{info}</Tooltip>}>
         <span
           role="img"
           aria-label={`Info: ${title}`}
@@ -117,27 +127,15 @@ function InfoLabel({ title, info }) {
 function ChartColumn({ topLabel, bottomLabel, children }) {
   return (
     <div className="d-flex flex-column align-items-center flex-fill">
-      <small
-        className="text-muted mb-2 text-center"
-        style={{ minHeight: 18, lineHeight: 1.1, fontSize: 12 }}
-      >
+      <small className="text-muted mb-2 text-center" style={{ minHeight: 18, lineHeight: 1.1, fontSize: 12 }}>
         {topLabel}
       </small>
 
-      <div
-        style={{
-          width: '100%',
-          height: 96,
-          position: 'relative'
-        }}
-      >
+      <div style={{ width: '100%', height: 96, position: 'relative' }}>
         {children}
       </div>
 
-      <small
-        className="mt-2 text-muted text-center"
-        style={{ minHeight: 18, lineHeight: 1.1, fontSize: 12 }}
-      >
+      <small className="mt-2 text-muted text-center" style={{ minHeight: 18, lineHeight: 1.1, fontSize: 12 }}>
         {bottomLabel}
       </small>
     </div>
@@ -150,19 +148,11 @@ function MiniBarChart({ data, valueFormatter, color = '#2f6ae6' }) {
   return (
     <div className="d-flex gap-2 align-items-start">
       {data.map(d => {
-        const barHeight =
-          d.value === 0 ? 6 : Math.max(6, (d.value / maxValue) * 96)
+        const barHeight = d.value === 0 ? 6 : Math.max(6, (d.value / maxValue) * 96)
 
         return (
-          <ChartColumn
-            key={d.label}
-            topLabel={valueFormatter(d.value)}
-            bottomLabel={d.label}
-          >
-            <div
-              className="d-flex align-items-end"
-              style={{ width: '100%', height: '100%' }}
-            >
+          <ChartColumn key={d.label} topLabel={valueFormatter(d.value)} bottomLabel={d.label}>
+            <div className="d-flex align-items-end" style={{ width: '100%', height: '100%' }}>
               <div
                 style={{
                   width: '100%',
@@ -181,8 +171,7 @@ function MiniBarChart({ data, valueFormatter, color = '#2f6ae6' }) {
 
 function VarianceBarChart({ data }) {
   const maxAbs = Math.max(...data.map(d => Math.abs(d.value)), 1)
-  const chartHeight = 96
-  const halfHeight = chartHeight / 2
+  const halfHeight = 48
 
   return (
     <div className="d-flex gap-2 align-items-start">
@@ -192,11 +181,7 @@ function VarianceBarChart({ data }) {
           value === 0 ? 0 : Math.max(6, (Math.abs(value) / maxAbs) * (halfHeight - 6))
 
         return (
-          <ChartColumn
-            key={d.label}
-            topLabel={formatSignedMinutes(value)}
-            bottomLabel={d.label}
-          >
+          <ChartColumn key={d.label} topLabel={formatSignedMinutes(value)} bottomLabel={d.label}>
             <div
               style={{
                 position: 'absolute',
@@ -293,9 +278,178 @@ function pairRunSessions(events, rangeStartMs, rangeEndMs) {
   return perDaySeconds
 }
 
+function buildExecutionSegments(events, completedTasks, rangeStartMs, rangeEndMs) {
+  const completedIds = new Set(completedTasks.map(task => task.id))
+  const tasksById = Object.fromEntries(completedTasks.map(task => [task.id, task]))
+
+  const sorted = [...events]
+    .filter(event => event.at >= rangeStartMs && event.at <= rangeEndMs)
+    .sort((a, b) => a.at - b.at)
+
+  const openRuns = new Map()
+  const segments = []
+
+  for (const event of sorted) {
+    if (!event.taskId || !completedIds.has(event.taskId)) continue
+
+    if (event.type === 'run_started') {
+      openRuns.set(event.taskId, event.at)
+      continue
+    }
+
+    if (
+      event.type === 'run_paused' ||
+      event.type === 'context_switch_requested' ||
+      event.type === 'task_completed'
+    ) {
+      const start = openRuns.get(event.taskId)
+      if (start == null) continue
+
+      if (event.at > start) {
+        segments.push({
+          taskId: event.taskId,
+          taskName: tasksById[event.taskId]?.name ?? 'Task',
+          start,
+          end: event.at
+        })
+      }
+
+      openRuns.delete(event.taskId)
+    }
+  }
+
+  return segments
+}
+
+function CompletedExecutionTimeline({ events, completedTasks, selectedDayKey }) {
+  const selectedTaskIds = new Set(
+    completedTasks
+      .filter(task => task.completedAt && dayKey(task.completedAt) === selectedDayKey)
+      .map(task => task.id)
+  )
+
+  const matchingTasks = completedTasks.filter(task => selectedTaskIds.has(task.id))
+
+  if (matchingTasks.length === 0) {
+    return <p className="text-muted mb-0">No completed tasks for this day.</p>
+  }
+
+  const dayStart = startOfDay(matchingTasks[0].completedAt).getTime()
+  const dayEnd = endOfDay(matchingTasks[0].completedAt).getTime()
+
+  const segments = buildExecutionSegments(events, matchingTasks, dayStart, dayEnd)
+
+  if (segments.length === 0) {
+    return <p className="text-muted mb-0">No execution intervals recorded for this day.</p>
+  }
+
+  const rawFirstStart = Math.min(...segments.map(segment => segment.start))
+  const rawLastEnd = Math.max(...segments.map(segment => segment.end))
+  const minimumWindowMs = 90 * 60 * 1000
+  const rawWindow = Math.max(rawLastEnd - rawFirstStart, 1)
+  const padding = Math.max(0, minimumWindowMs - rawWindow) / 2
+
+  const firstStart = Math.max(dayStart, rawFirstStart - padding)
+  const lastEnd = Math.min(dayEnd, rawLastEnd + padding)
+  const totalWindow = Math.max(lastEnd - firstStart, 1)
+
+  const colorByTaskId = {}
+  let colorIndex = 0
+
+  for (const segment of segments) {
+    if (!colorByTaskId[segment.taskId]) {
+      colorByTaskId[segment.taskId] = TIMELINE_COLORS[colorIndex % TIMELINE_COLORS.length]
+      colorIndex += 1
+    }
+  }
+
+  const tickCount = 4
+  const ticks = Array.from({ length: tickCount + 1 }, (_, i) => {
+    const ts = firstStart + (totalWindow / tickCount) * i
+    return {
+      left: `${(i / tickCount) * 100}%`,
+      label: formatClockTime(ts)
+    }
+  })
+
+  return (
+    <div>
+      <div style={{ position: 'relative', height: 18, marginBottom: 4 }}>
+        {ticks.map(tick => (
+          <span
+            key={tick.left}
+            className="text-muted"
+            style={{
+              position: 'absolute',
+              left: tick.left,
+              transform:
+                tick.left === '0%'
+                  ? 'none'
+                  : tick.left === '100%'
+                    ? 'translateX(-100%)'
+                    : 'translateX(-50%)',
+              fontSize: 11,
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {tick.label}
+          </span>
+        ))}
+      </div>
+
+      <div
+        style={{
+          position: 'relative',
+          height: 44,
+          border: '1px solid var(--border)',
+          borderRadius: 6,
+          backgroundColor: 'var(--card-nested-bg)',
+          overflow: 'hidden'
+        }}
+        aria-label="Completed task wall clock execution timeline"
+      >
+        {segments.map((segment, index) => {
+          const left = `${((segment.start - firstStart) / totalWindow) * 100}%`
+          const width = `${((segment.end - segment.start) / totalWindow) * 100}%`
+          const color = colorByTaskId[segment.taskId]
+
+          return (
+            <div
+              key={`${segment.taskId}-${segment.start}-${index}`}
+              title={`${segment.taskName}: ${formatClockTime(segment.start)}–${formatClockTime(segment.end)}`}
+              style={{
+                position: 'absolute',
+                left,
+                width,
+                minWidth: 6,
+                top: 0,
+                bottom: 0,
+                backgroundColor: color,
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 12,
+                fontWeight: 600,
+                padding: '0 0.25rem',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}
+            >
+              {segment.taskName}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export default function MetricsPage() {
   const { completedTasks, eventLog } = useQueue()
   const [rangeDays, setRangeDays] = useState(5)
+  const [selectedTimelineDay, setSelectedTimelineDay] = useState(null)
 
   const { dayBuckets, summary, score } = useMemo(() => {
     const today = new Date()
@@ -397,6 +551,11 @@ export default function MetricsPage() {
     }
   }, [completedTasks, eventLog, rangeDays])
 
+  const timelineDay =
+    selectedTimelineDay && dayBuckets.some(day => day.key === selectedTimelineDay)
+      ? selectedTimelineDay
+      : [...dayBuckets].reverse().find(day => day.throughput > 0)?.key ?? dayBuckets[dayBuckets.length - 1]?.key
+
   const throughputChart = dayBuckets.map(day => ({
     label: day.label,
     value: day.throughput
@@ -429,17 +588,12 @@ export default function MetricsPage() {
                   >
                     <div>
                       <h1 className="mb-2">Metrics</h1>
-                      <p className="text-muted mb-0">
-                        How things are going.
-                      </p>
+                      <p className="text-muted mb-0">How things are going.</p>
                     </div>
 
                     <div className="d-flex justify-content-center">
                       <div className="d-flex flex-column align-items-center">
-                        <div
-                          className="d-flex align-items-center gap-2 mb-1"
-                          style={{ fontSize: '1rem', fontWeight: 600 }}
-                        >
+                        <div className="d-flex align-items-center gap-2 mb-1" style={{ fontSize: '1rem', fontWeight: 600 }}>
                           <span>Productivity Score</span>
 
                           <OverlayTrigger
@@ -518,15 +672,8 @@ export default function MetricsPage() {
                               onClick={() => setRangeDays(days)}
                               style={
                                 active
-                                  ? {
-                                      backgroundColor: '#2f6ae6',
-                                      borderColor: '#2f6ae6',
-                                      color: '#ffffff'
-                                    }
-                                  : {
-                                      color: '#9fc2ff',
-                                      borderColor: '#6ea3ff'
-                                    }
+                                  ? { backgroundColor: '#2f6ae6', borderColor: '#2f6ae6', color: '#ffffff' }
+                                  : { color: '#9fc2ff', borderColor: '#6ea3ff' }
                               }
                             >
                               Last {days}d
@@ -543,21 +690,11 @@ export default function MetricsPage() {
             <Col md={6} xl={4}>
               <Card className="p-3 h-100">
                 <Card.Body>
-                  <InfoLabel
-                    title="Tasks Throughput"
-                    info="How many tasks you completed each day."
-                  />
-                  <div
-                    className="mb-2 fw-semibold d-flex align-items-center"
-                    style={{ minHeight: 24 }}
-                  >
+                  <InfoLabel title="Tasks Throughput" info="How many tasks you completed each day." />
+                  <div className="mb-2 fw-semibold d-flex align-items-center" style={{ minHeight: 24 }}>
                     {summary.totalCompleted} completed
                   </div>
-                  <MiniBarChart
-                    data={throughputChart}
-                    valueFormatter={value => `${value}`}
-                    color="#2f6ae6"
-                  />
+                  <MiniBarChart data={throughputChart} valueFormatter={value => `${value}`} color="#2f6ae6" />
                 </Card.Body>
               </Card>
             </Col>
@@ -569,10 +706,7 @@ export default function MetricsPage() {
                     title="Average Over / Under Estimate"
                     info="Average actual minus estimated time for tasks completed that day. Red means you ran over. Green means you finished early."
                   />
-                  <div
-                    className="mb-2 fw-semibold d-flex align-items-center"
-                    style={{ minHeight: 24 }}
-                  >
+                  <div className="mb-2 fw-semibold d-flex align-items-center" style={{ minHeight: 24 }}>
                     {formatSignedMinutes(summary.avgVariance)}
                   </div>
                   <VarianceBarChart data={varianceChart} />
@@ -587,16 +721,57 @@ export default function MetricsPage() {
                     title="Context Switch Latency"
                     info="How long it took to commit a context switch after the quantum expired."
                   />
-                  <div
-                    className="mb-2 fw-semibold d-flex align-items-center"
-                    style={{ minHeight: 24 }}
-                  >
+                  <div className="mb-2 fw-semibold d-flex align-items-center" style={{ minHeight: 24 }}>
                     {formatSeconds(summary.avgLatency)}
                   </div>
                   <MiniBarChart
                     data={latencyChart}
                     valueFormatter={value => formatCompactDuration(value)}
                     color="#a87800"
+                  />
+                </Card.Body>
+              </Card>
+            </Col>
+
+            <Col xs={12}>
+              <Card className="p-3 h-100">
+                <Card.Body>
+                  <div className="d-flex justify-content-between align-items-start gap-3 mb-2">
+                    <InfoLabel
+                      title="Completed Execution Timeline"
+                      info="Completed task intervals shown by wall-clock time for the selected day. Empty space means no completed task was running."
+                    />
+
+                    <ButtonGroup aria-label="Timeline day">
+                      {dayBuckets.map(day => {
+                        const active = day.key === timelineDay
+
+                        return (
+                          <Button
+                            key={day.key}
+                            type="button"
+                            variant={active ? 'primary' : 'outline-primary'}
+                            active={active}
+                            aria-label={`Show timeline for ${day.label}`}
+                            aria-pressed={active}
+                            onClick={() => setSelectedTimelineDay(day.key)}
+                            style={
+                              active
+                                ? { backgroundColor: '#2f6ae6', borderColor: '#2f6ae6', color: '#ffffff' }
+                                : { color: '#9fc2ff', borderColor: '#6ea3ff' }
+                            }
+                          >
+                            {day.label}
+                          </Button>
+                        )
+                      })}
+                    </ButtonGroup>
+                  </div>
+
+                  <CompletedExecutionTimeline
+                    events={eventLog}
+                    completedTasks={completedTasks}
+                    selectedDayKey={timelineDay}
                   />
                 </Card.Body>
               </Card>
