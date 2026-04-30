@@ -2,11 +2,22 @@ import '../App.css'
 import { useEffect, useMemo, useState } from 'react'
 import { Card, Row, Col, Form, Button } from 'react-bootstrap'
 
+const ORDER_COLORS = [
+  '#1f4fd1',
+  '#8a6500',
+  '#237044',
+  '#6f4db8',
+  '#1f7f78',
+  '#4f63bf',
+  '#9b1c1c',
+  '#a65f20'
+]
+
 function fisherYatesShuffle(items) {
   const arr = [...items]
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
-    ;[arr[i], arr[j]] = [arr[j], arr[i]]
+      ;[arr[i], arr[j]] = [arr[j], arr[i]]
   }
   return arr
 }
@@ -188,7 +199,7 @@ export default function StandupPage() {
 
                   <Card className="p-3 mt-4">
                     <Card.Body>
-                      <h3 className="mb-3">Participants</h3>
+                      <h2 className="mb-3">Participants</h2>
 
                       {participants.length === 0 ? (
                         <p className="text-muted mb-0">No participants added yet.</p>
@@ -219,7 +230,7 @@ export default function StandupPage() {
               {mode === 'running' && (
                 <Card className={`p-3 ${overtime ? 'bg-danger text-white border-danger' : ''}`}>
                   <Card.Body>
-                    <h3 className="mb-3">Meeting Control</h3>
+                    <h2 className="mb-3">Meeting Control</h2>
 
                     {currentSpeaker ? (
                       <>
@@ -324,10 +335,8 @@ export default function StandupPage() {
                 ) : (
                   <div className="task-queue-list">
                     {(mode === 'running' ? order.slice(currentSpeakerIndex) : order).map((participant, index) => {
-                      const color =
-                        index === 0 ? '#4f86f7' :
-                        index === 1 ? '#f2c14e' :
-                        '#58b368'
+                      const originalIndex = order.findIndex(p => p.id === participant.id)
+                      const color = ORDER_COLORS[originalIndex % ORDER_COLORS.length]
 
                       return (
                         <div
@@ -342,10 +351,10 @@ export default function StandupPage() {
                             {mode === 'recap'
                               ? `${index + 1}. ${participant.name}`
                               : index === 0
-                              ? `Now: ${participant.name}`
-                              : index === 1
-                              ? `On Deck: ${participant.name}`
-                              : participant.name}
+                                ? `Now: ${participant.name}`
+                                : index === 1
+                                  ? `On Deck: ${participant.name}`
+                                  : participant.name}
                           </span>
                         </div>
                       )

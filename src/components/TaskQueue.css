@@ -30,13 +30,7 @@
   border: 2px solid var(--queue-next-border);
 }
 
-.task-remove-btn {
-  background-color: var(--remove-btn-bg);
-  color: var(--remove-btn-text);
-}
-.task-queue-header h2 {
-  margin: 0;
-}
+
 
 .task-queue-container {
   overflow-y: auto;
@@ -74,10 +68,6 @@
 
   position: relative;
   border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.task-remove-btn:hover {
-  opacity: 1;
 }
 
 /* keep text centered cleanly */
@@ -143,9 +133,4 @@
 
 .task-block-next {
   border: 2px solid var(--queue-next-border);
-}
-
-.task-remove-btn {
-  background-color: var(--remove-btn-bg);
-  color: var(--remove-btn-text);
 }

@@ -32,6 +32,9 @@ export default function Layout() {
           Metrics
         </NavLink>
 
+        <NavLink to="/retry" className="nav-item">
+          Retry
+        </NavLink>
 
         <NavLink to="/standup" className="nav-item">
           Standup

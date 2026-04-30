@@ -14,7 +14,7 @@
   --nav-bg: #232428;
   --nav-item-bg: #2b2d31;
   --nav-item-hover: #3a3d42;
-  --nav-item-active: #4f86f7;
+  --nav-item-active: #2f6ae6;
   --nav-item-text: #e6e6e6;
 
   --link: #9aa4ff;
@@ -26,7 +26,7 @@
   --queue-next-border: #ffffff;
   --queue-container-border: #3c3f44;
 
-  --remove-btn-bg: #ff0000;
+  --remove-btn-bg: #9b1c1c;
   --remove-btn-text: #ffffff;
 }
 
@@ -46,7 +46,7 @@
   --nav-bg: #dde2e7;
   --nav-item-bg: #f8f9fa;
   --nav-item-hover: #e3e7eb;
-  --nav-item-active: #4f86f7;
+  --nav-item-active: #2f6ae6;
   --nav-item-text: #1f2328;
 
   --link: #3451b2;
@@ -148,6 +148,7 @@ body {
   font-size: 14px;
   font-weight: bold;
   line-height: 1;
+
   padding: 2px 6px;
   cursor: pointer;
   opacity: 0.8;
@@ -155,6 +156,7 @@ body {
 }
 
 .task-remove-btn:hover {
+  background-color: #7f1717;
   opacity: 1;
 }
 

@@ -165,3 +165,15 @@ code,
 
   font-size: 18px;
 }
+
+.btn-outline-danger {
+  color: #ff6b6b;
+  border-color: #ff6b6b;
+}
+
+.btn-outline-danger:hover,
+.btn-outline-danger:focus {
+  color: #ffffff;
+  background-color: #9b1c1c;
+  border-color: #9b1c1c;
+}

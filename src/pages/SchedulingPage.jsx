@@ -57,7 +57,7 @@ export default function SchedulingPage() {
                   />
                 </Form.Group>
 
-                <Form.Label>Estimated Time</Form.Label>
+                <div className="form-label">Estimated Time</div>
                 <Row className="mb-3">
                   <Col xs={6}>
                     <Form.Group controlId="estimatedMinutes">

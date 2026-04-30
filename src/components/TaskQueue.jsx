@@ -3,14 +3,14 @@ import './TaskQueue.css'
 import { useQueue } from '../contexts/QueueContext'
 
 const COLORS = [
-  '#4f86f7',
-  '#58b368',
-  '#f2c14e',
-  '#d95d39',
-  '#8e6cce',
-  '#2a9d8f',
-  '#f4a261',
-  '#7b8cde'
+  '#2f6ae6',
+  '#237044',
+  '#755200',
+  '#b94a2f',
+  '#6f4db8',
+  '#1f7f78',
+  '#a65f20',
+  '#5a6fd1'
 ]
 
 export default function TaskQueue() {
@@ -53,27 +53,40 @@ export default function TaskQueue() {
           </div>
 
           <div className="task-queue-quantum">
-            <Form.Label>Quantum</Form.Label>
+            <div className="form-label">Quantum</div>
+
             <Row className="g-1">
               <Col xs={6}>
-                <Form.Control
-                  type="number"
-                  min="0"
-                  value={quantumMinutes}
-                  onChange={e => handleQuantumMinutesChange(e.target.value)}
-                />
+                <Form.Group controlId="quantumMinutes">
+                  <Form.Label className="visually-hidden">
+                    Quantum minutes
+                  </Form.Label>
+                  <Form.Control
+                    type="number"
+                    min="0"
+                    value={quantumMinutes}
+                    onChange={e => handleQuantumMinutesChange(e.target.value)}
+                  />
+                </Form.Group>
               </Col>
+
               <Col xs={6}>
-                <Form.Control
-                  type="number"
-                  min="0"
-                  max="59"
-                  value={quantumSeconds}
-                  onChange={e => handleQuantumSecondsChange(e.target.value)}
-                />
+                <Form.Group controlId="quantumSeconds">
+                  <Form.Label className="visually-hidden">
+                    Quantum seconds
+                  </Form.Label>
+                  <Form.Control
+                    type="number"
+                    min="0"
+                    max="59"
+                    value={quantumSeconds}
+                    onChange={e => handleQuantumSecondsChange(e.target.value)}
+                  />
+                </Form.Group>
               </Col>
             </Row>
-            <div className="task-queue-quantum-labels">
+
+            <div className="task-queue-quantum-labels" aria-hidden="true">
               <small>min</small>
               <small>sec</small>
             </div>
@@ -107,6 +120,7 @@ export default function TaskQueue() {
                     <button
                       type="button"
                       className="task-remove-btn"
+                      aria-label={`Remove ${task.name}`}
                       onClick={e => {
                         e.stopPropagation()
                         removeTask(task.id)

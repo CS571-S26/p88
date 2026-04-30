@@ -176,7 +176,7 @@ useEffect(() => {
               <Card className="p-3">
                 <Card.Body>
                   <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h3 className="mb-0">Current Task</h3>
+                    <h2 className="mb-0">Current Task</h2>
                   </div>
                   {currentTask ? (
                     <>
