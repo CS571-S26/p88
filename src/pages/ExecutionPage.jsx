@@ -51,44 +51,44 @@ export default function ExecutionPage() {
     }
   }, [isRunning, currentTask, awaitingContextSwitch, quantumRemaining, logEvent])
 
-useEffect(() => {
-  if (!isRunning || !currentTask || awaitingContextSwitch) return
+  useEffect(() => {
+    if (!isRunning || !currentTask || awaitingContextSwitch) return
 
-  const intervalId = setInterval(() => {
-    if (quantumRemaining > 1) {
-      setQuantumRemaining(prev => prev - 1)
-      return
-    }
+    const intervalId = setInterval(() => {
+      if (quantumRemaining > 1) {
+        setQuantumRemaining(prev => prev - 1)
+        return
+      }
 
-    if (queue.length === 1) {
-      setQuantumRemaining(quantum)
-      completeQuantumAndRotate()
-      logEvent('quantum_completed', currentTask.id, {
-        workedSeconds: quantum
-      })
-      setStatusMessage('Running')
-      return
-    }
+      if (queue.length === 1) {
+        setQuantumRemaining(quantum)
+        completeQuantumAndRotate()
+        logEvent('quantum_completed', currentTask.id, {
+          workedSeconds: quantum
+        })
+        setStatusMessage('Running')
+        return
+      }
 
-    setQuantumRemaining(0)
-    setIsRunning(false)
-    setAwaitingContextSwitch(true)
-    logEvent('context_switch_requested', currentTask.id)
-    setStatusMessage('Awaiting Context Switch')
-  }, 1000)
+      setQuantumRemaining(0)
+      setIsRunning(false)
+      setAwaitingContextSwitch(true)
+      logEvent('context_switch_requested', currentTask.id)
+      setStatusMessage('Awaiting Context Switch')
+    }, 1000)
 
-  return () => clearInterval(intervalId)
-}, [
-  isRunning,
-  currentTask,
-  awaitingContextSwitch,
-  quantumRemaining,
-  queue.length,
-  quantum,
-  completeQuantumAndRotate,
-  logEvent
-])
- 
+    return () => clearInterval(intervalId)
+  }, [
+    isRunning,
+    currentTask,
+    awaitingContextSwitch,
+    quantumRemaining,
+    queue.length,
+    quantum,
+    completeQuantumAndRotate,
+    logEvent
+  ])
+
 
   function handlePlay() {
     if (!currentTask || awaitingContextSwitch) return
@@ -227,17 +227,27 @@ useEffect(() => {
                           <strong>{formatTime(quantumRemaining)}</strong>
                         </div>
 
-                        <Button
-                          variant={isRunning ? 'secondary' : 'primary'}
-                          onClick={isRunning ? handlePause : handlePlay}
-                          disabled={!currentTask || awaitingContextSwitch}
+                        <OverlayTrigger
+                          placement="top"
+                          overlay={<Tooltip>{isRunning ? 'Pause Task' : 'Start Task'}</Tooltip>}
                         >
-                          {isRunning ? '⏸' : '▶'}
-                        </Button>
+                          <Button
+                            variant={isRunning ? 'secondary' : 'primary'}
+                            onClick={isRunning ? handlePause : handlePlay}
+                            disabled={!currentTask || awaitingContextSwitch}
+                          >
+                            {isRunning ? '⏸' : '▶'}
+                          </Button>
+                        </OverlayTrigger>
 
-                        <Button variant="success" onClick={handleMarkComplete}>
-                          ✓
-                        </Button>
+                        <OverlayTrigger
+                          placement="top"
+                          overlay={<Tooltip>Mark Task Complete</Tooltip>}
+                        >
+                          <Button variant="success" onClick={handleMarkComplete}>
+                            ✓
+                          </Button>
+                        </OverlayTrigger>
 
                         {awaitingContextSwitch && (
                           <OverlayTrigger
@@ -247,7 +257,7 @@ useEffect(() => {
                             <Button variant="warning" onClick={handleContextSwitch}>
                               <FiRefreshCw />
                             </Button>
-                            
+
                           </OverlayTrigger>
                         )}
                       </div>
