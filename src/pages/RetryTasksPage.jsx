@@ -291,16 +291,20 @@ export default function RetryTasksPage() {
                     )}
 
                     <div className="d-flex gap-2 flex-wrap retry-task-controls">
-                      {!selectedRetryTask ? (
-                        <OverlayTrigger
-                          placement="top"
-                          overlay={<Tooltip>Enqueue Retry Task</Tooltip>}
+                      <OverlayTrigger
+                        placement="top"
+                        overlay={<Tooltip>Enqueue Retry Task</Tooltip>}
+                      >
+                        <Button
+                          type="submit"
+                          variant="success"
+                          aria-label="Enqueue Retry Task"
                         >
-                          <Button type="submit" variant="success" aria-label="Enqueue Retry Task">
-                            <FiPlus />
-                          </Button>
-                        </OverlayTrigger>
-                      ) : (
+                          <FiPlus />
+                        </Button>
+                      </OverlayTrigger>
+
+                      {selectedRetryTask && (
                         <>
                           <OverlayTrigger
                             placement="top"
