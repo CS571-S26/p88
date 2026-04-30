@@ -273,7 +273,7 @@ export default function StandupPage() {
               {mode === 'recap' && (
                 <Card className="p-3">
                   <Card.Body>
-                    <h3 className="mb-3">Recap</h3>
+                    <h2 className="mb-3">Recap</h2>
                     <p className="text-muted">
                       The meeting is complete. Here are the speakers and their notes.
                     </p>
